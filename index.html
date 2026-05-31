@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>親子英文閃卡</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <h1>📚 親子英文閃卡</h1>
+  <p>English Flashcard Generator · 輸入單字，自動生成閃卡</p>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('flashcard')">📖 閃卡 Card</button>
+  <button class="tab" onclick="switchTab('history')">📋 歷史 History</button>
+  <button class="tab" onclick="switchTab('quiz')">🎯 測驗 Quiz</button>
+</div>
+
+<!-- FLASHCARD PANEL -->
+<div class="panel active" id="panel-flashcard">
+  <div class="input-row">
+    <input id="wordInput" type="text" placeholder="輸入英文單字 Enter a word…" maxlength="30"/>
+    <button id="generateBtn" onclick="generate()">生成 ✨</button>
+  </div>
+  <div id="cardContainer">
+    <div class="placeholder">
+      <span style="font-size:3rem">📖</span>
+      <p>輸入一個英文單字<br>Enter an English word above</p>
+    </div>
+  </div>
+  <div id="flipHint" style="display:none" class="flip-hint">👆 點擊卡片翻面 · Click card to flip</div>
+  <div id="errorMsg" class="error-msg"></div>
+</div>
+
+<!-- HISTORY PANEL -->
+<div class="panel" id="panel-history">
+  <div id="historyContent" style="width:100%"></div>
+</div>
+
+<!-- QUIZ PANEL -->
+<div class="panel" id="panel-quiz">
+  <div id="quizContent" style="width:100%"></div>
+</div>
+
+<script src="js/main.js"></script>
+<script src="js/flashcard.js"></script>
+<script src="js/history.js"></script>
+<script src="js/quiz.js"></script>
+</body>
+</html>
