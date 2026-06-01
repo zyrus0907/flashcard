@@ -20,6 +20,19 @@ function saveHistory() {
   localStorage.setItem('fc_history', JSON.stringify(history));
 }
 
+// ---- Theme (dark / light) ----
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('fc_theme', theme);
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+}
+
 // ---- Tab switching ----
 function switchTab(name) {
   const tabNames = ['flashcard', 'history', 'quiz'];
@@ -34,6 +47,11 @@ function switchTab(name) {
 
 // ---- Init ----
 document.addEventListener('DOMContentLoaded', () => {
+  // Sync the toggle icon with the theme set by the inline head script.
+  const theme = document.documentElement.getAttribute('data-theme') || 'light';
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+
   document.getElementById('wordInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') generate();
   });
