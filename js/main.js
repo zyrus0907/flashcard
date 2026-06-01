@@ -2,6 +2,39 @@
 let history = JSON.parse(localStorage.getItem('fc_history') || '[]');
 let flipped = false;
 let quizState = null;
+let currentCard = null; // the card currently shown on the flashcard tab
+
+// Global learning stats (for streak / progress / rewards)
+let appStats = JSON.parse(localStorage.getItem('fc_stats') || '{}');
+function saveStats() {
+  localStorage.setItem('fc_stats', JSON.stringify(appStats));
+}
+
+// ---- Spaced repetition + progress helpers ----
+// Each word in history gets a stats object: { correct, wrong, seen, lastResult }
+function ensureStats(d) {
+  if (!d.stats) d.stats = { correct: 0, wrong: 0, seen: 0, lastResult: null };
+  return d.stats;
+}
+
+// Higher score = needs practice more (unseen and recently-wrong words rank first).
+function reviewScore(d) {
+  const s = ensureStats(d);
+  if (s.seen === 0) return 1000 + Math.random() * 10;     // brand-new words first
+  return (s.wrong * 2 - s.correct) * 10                    // weak words first
+    + (s.lastResult === 'wrong' ? 15 : 0)                  // missed last time -> sooner
+    + Math.random() * 8;                                   // a little variety
+}
+
+// A word counts as "mastered" once answered right a couple of times, net positive.
+function isMastered(d) {
+  const s = ensureStats(d);
+  return s.correct >= 2 && s.correct > s.wrong;
+}
+
+function getProgress() {
+  return { mastered: history.filter(isMastered).length, total: history.length };
+}
 
 // ---- Utilities ----
 function speak(text) {

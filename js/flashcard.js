@@ -132,6 +132,7 @@ async function generate() {
 }
 
 function renderCard(d) {
+  currentCard = d; // remember it for auto-play on flip
   const container = document.getElementById('cardContainer');
   const hint = document.getElementById('flipHint');
 
@@ -170,4 +171,6 @@ function flipCard() {
   if (!inner) return;
   flipped = !flipped;
   inner.classList.toggle('flipped', flipped);
+  // Auto-play the pronunciation when the card is flipped to its back (the reveal).
+  if (flipped && currentCard) speak(currentCard.word);
 }

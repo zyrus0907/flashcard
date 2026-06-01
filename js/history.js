@@ -10,6 +10,7 @@ function renderHistory() {
     <div class="history-grid">
       ${history.map((d, i) => `
         <div class="hist-card" onclick="loadFromHistory(${i})">
+          ${isMastered(d) ? '<div class="hist-mastered" title="已學會 Mastered">⭐</div>' : ''}
           <div class="hist-emoji">${d.emoji}</div>
           <div class="hist-word">${d.word}</div>
           <div class="hist-zh">${d.zh}</div>
