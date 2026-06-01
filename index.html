@@ -33,7 +33,7 @@
   </div>
   <div id="flipHint" style="display:none" class="flip-hint">👆 點擊卡片翻面 · Click card to flip</div>
   <div id="errorMsg" class="error-msg"></div>
-  <button onclick="localStorage.removeItem('fc_api_key');alert('API key cleared.')" style="margin-top:6px;background:none;border:none;color:#ccc;font-size:0.75rem;cursor:pointer;">🔑 Reset API key</button>
+  <button onclick="localStorage.removeItem('fc_api_key');openApiModal()" style="margin-top:6px;background:none;border:none;color:#ccc;font-size:0.75rem;cursor:pointer;">🔑 Reset API key</button>
 </div>
 
 <!-- HISTORY PANEL -->
@@ -44,6 +44,19 @@
 <!-- QUIZ PANEL -->
 <div class="panel" id="panel-quiz">
   <div id="quizContent" style="width:100%"></div>
+</div>
+
+<!-- API Key Modal -->
+<div class="modal-overlay" id="apiModal" style="display:none">
+  <div class="modal">
+    <h2>🔑 Anthropic API Key</h2>
+    <p>輸入你的 API Key，只需輸入一次，儲存在瀏覽器中。<br>Enter your key once — saved locally in your browser.</p>
+    <input id="apiKeyInput" type="password" placeholder="sk-ant-…" autocomplete="off"/>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeApiModal()">取消 Cancel</button>
+      <button class="btn-save" onclick="saveApiKey()">儲存 Save</button>
+    </div>
+  </div>
 </div>
 
 <script src="js/main.js"></script>

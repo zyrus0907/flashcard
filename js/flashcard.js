@@ -4,13 +4,28 @@ function getApiKey() {
   return localStorage.getItem('fc_api_key') || '';
 }
 
-function promptApiKey() {
-  const key = prompt('請輸入你的 Anthropic API Key\nEnter your Anthropic API key (sk-ant-…):');
-  if (key && key.trim().startsWith('sk-')) {
-    localStorage.setItem('fc_api_key', key.trim());
-    return key.trim();
+let _pendingWord = null;
+
+function openApiModal() {
+  document.getElementById('apiModal').style.display = 'flex';
+  document.getElementById('apiKeyInput').value = '';
+  setTimeout(() => document.getElementById('apiKeyInput').focus(), 50);
+}
+
+function closeApiModal() {
+  document.getElementById('apiModal').style.display = 'none';
+  _pendingWord = null;
+}
+
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key.startsWith('sk-')) {
+    document.getElementById('apiKeyInput').style.borderColor = '#e05555';
+    return;
   }
-  return null;
+  localStorage.setItem('fc_api_key', key);
+  document.getElementById('apiModal').style.display = 'none';
+  if (_pendingWord) generate();
 }
 
 async function generate() {
@@ -23,10 +38,11 @@ async function generate() {
   const word = input.value.trim();
   if (!word) return;
 
-  let apiKey = getApiKey();
+  const apiKey = getApiKey();
   if (!apiKey) {
-    apiKey = promptApiKey();
-    if (!apiKey) return;
+    _pendingWord = word;
+    openApiModal();
+    return;
   }
 
   btn.disabled = true;

@@ -1,3 +1,14 @@
+/* API Key Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:999;padding:20px}
+.modal{background:#fff;border-radius:18px;padding:28px 24px;max-width:400px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.15)}
+.modal h2{font-size:1.1rem;color:#e07b39;margin-bottom:6px}
+.modal p{font-size:0.82rem;color:#aaa;margin-bottom:16px;line-height:1.6}
+.modal input{width:100%;padding:11px 14px;border:2px solid #f0c89a;border-radius:12px;font-size:0.88rem;outline:none;margin-bottom:12px;font-family:monospace}
+.modal input:focus{border-color:#e07b39}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.modal-btns button{padding:9px 20px;border:none;border-radius:10px;font-size:0.88rem;font-weight:700;cursor:pointer}
+.modal-btns .btn-save{background:#e07b39;color:#fff}
+.modal-btns .btn-cancel{background:#f5ede3;color:#b07040}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI','PingFang TC',sans-serif;background:#fdf6ec;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px;color:#333}
 h1{font-size:1.6rem;color:#e07b39;font-weight:800}
