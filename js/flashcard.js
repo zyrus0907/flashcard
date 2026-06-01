@@ -88,8 +88,16 @@ async function generate() {
     }
     renderCard(d);
   } catch (e) {
+    const msg = e.message || 'Error';
     container.innerHTML = `<div class="placeholder"><span>⚠️</span><p>無法生成閃卡<br>Failed. Try again.</p></div>`;
-    errMsg.textContent = e.message || 'Error';
+    errMsg.textContent = msg;
+    // If the key was rejected, clear it and reopen the modal so the user can re-enter.
+    if (/x-api-key|authentication|invalid.*key|401/i.test(msg)) {
+      localStorage.removeItem('fc_api_key');
+      errMsg.textContent = 'API key 無效，請重新輸入 · Invalid API key — please re-enter.';
+      _pendingWord = word;
+      openApiModal();
+    }
   } finally {
     btn.disabled = false;
   }
