@@ -1,7 +1,17 @@
 // ---- Flashcard tab ----
 
-// Replace with your Anthropic API key (never commit this to a public repo)
-const API_KEY = 'YOUR_API_KEY_HERE';
+function getApiKey() {
+  return localStorage.getItem('fc_api_key') || '';
+}
+
+function promptApiKey() {
+  const key = prompt('請輸入你的 Anthropic API Key\nEnter your Anthropic API key (sk-ant-…):');
+  if (key && key.trim().startsWith('sk-')) {
+    localStorage.setItem('fc_api_key', key.trim());
+    return key.trim();
+  }
+  return null;
+}
 
 async function generate() {
   const input = document.getElementById('wordInput');
@@ -12,6 +22,12 @@ async function generate() {
 
   const word = input.value.trim();
   if (!word) return;
+
+  let apiKey = getApiKey();
+  if (!apiKey) {
+    apiKey = promptApiKey();
+    if (!apiKey) return;
+  }
 
   btn.disabled = true;
   errMsg.textContent = '';
@@ -24,7 +40,7 @@ async function generate() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': API_KEY,
+        'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
         'anthropic-dangerous-direct-browser-access': 'true',
       },
