@@ -1,31 +1,57 @@
-// ---- Flashcard tab ----
+// ---- Flashcard tab (free APIs, no API key needed) ----
+// Dictionary: https://dictionaryapi.dev  (phonetic, part of speech, example)
+// Translation: https://mymemory.translated.net  (English -> Traditional Chinese)
 
-function getApiKey() {
-  return localStorage.getItem('fc_api_key') || '';
+// Part-of-speech -> bilingual label
+const POS_MAP = {
+  noun: 'n. 名詞', verb: 'v. 動詞', adjective: 'adj. 形容詞', adverb: 'adv. 副詞',
+  pronoun: 'pron. 代名詞', preposition: 'prep. 介系詞', conjunction: 'conj. 連接詞',
+  interjection: 'interj. 感嘆詞', exclamation: 'interj. 感嘆詞', determiner: 'det. 限定詞',
+  article: 'art. 冠詞', numeral: 'num. 數詞',
+};
+
+// Word -> emoji (common parent-child vocabulary). Falls back by part of speech.
+const EMOJI_MAP = {
+  cat:'🐱',dog:'🐶',bird:'🐦',fish:'🐟',lion:'🦁',tiger:'🐯',bear:'🐻',rabbit:'🐰',elephant:'🐘',
+  monkey:'🐵',horse:'🐴',cow:'🐮',pig:'🐷',sheep:'🐑',duck:'🦆',chicken:'🐔',frog:'🐸',snake:'🐍',
+  turtle:'🐢',panda:'🐼',fox:'🦊',wolf:'🐺',mouse:'🐭',bee:'🐝',butterfly:'🦋',ant:'🐜',spider:'🕷️',
+  apple:'🍎',banana:'🍌',orange:'🍊',grape:'🍇',strawberry:'🍓',watermelon:'🍉',bread:'🍞',milk:'🥛',
+  egg:'🥚',rice:'🍚',cake:'🍰',cookie:'🍪',candy:'🍬',pizza:'🍕',water:'💧',juice:'🧃',cheese:'🧀',
+  carrot:'🥕',tomato:'🍅',corn:'🌽',lemon:'🍋',peach:'🍑',
+  sun:'☀️',moon:'🌙',star:'⭐',cloud:'☁️',rain:'🌧️',snow:'❄️',tree:'🌳',flower:'🌸',grass:'🌱',
+  mountain:'⛰️',sea:'🌊',river:'🏞️',fire:'🔥',rainbow:'🌈',wind:'💨',
+  mom:'👩',mother:'👩',dad:'👨',father:'👨',baby:'👶',family:'👨‍👩‍👧‍👦',brother:'👦',sister:'👧',
+  grandma:'👵',grandpa:'👴',boy:'👦',girl:'👧',friend:'🧑‍🤝‍🧑',
+  hand:'✋',eye:'👁️',ear:'👂',nose:'👃',mouth:'👄',foot:'🦶',heart:'❤️',hair:'💇',tooth:'🦷',
+  book:'📖',pen:'🖊️',pencil:'✏️',school:'🏫',bag:'🎒',ruler:'📏',paper:'📄',
+  car:'🚗',bus:'🚌',train:'🚆',plane:'✈️',bike:'🚲',boat:'⛵',ship:'🚢',truck:'🚚',
+  house:'🏠',door:'🚪',window:'🪟',bed:'🛏️',chair:'🪑',table:'🍽️',clock:'🕐',phone:'📱',key:'🔑',
+  ball:'⚽',toy:'🧸',gift:'🎁',balloon:'🎈',music:'🎵',
+  red:'🔴',blue:'🔵',green:'🟢',yellow:'🟡',black:'⚫',white:'⚪',pink:'🩷',purple:'🟣',
+  happy:'😊',sad:'😢',love:'❤️',smile:'😄',cry:'😢',sleep:'😴',run:'🏃',jump:'🤸',eat:'🍽️',drink:'🥤',
+};
+
+function guessEmoji(word, posEn) {
+  const w = word.toLowerCase();
+  if (EMOJI_MAP[w]) return EMOJI_MAP[w];
+  if (posEn === 'verb') return '🏃';
+  if (posEn === 'adjective') return '✨';
+  if (posEn === 'adverb') return '💨';
+  return '📘';
 }
 
-let _pendingWord = null;
-
-function openApiModal() {
-  document.getElementById('apiModal').style.display = 'flex';
-  document.getElementById('apiKeyInput').value = '';
-  setTimeout(() => document.getElementById('apiKeyInput').focus(), 50);
-}
-
-function closeApiModal() {
-  document.getElementById('apiModal').style.display = 'none';
-  _pendingWord = null;
-}
-
-function saveApiKey() {
-  const key = document.getElementById('apiKeyInput').value.trim();
-  if (!key.startsWith('sk-')) {
-    document.getElementById('apiKeyInput').style.borderColor = '#e05555';
-    return;
-  }
-  localStorage.setItem('fc_api_key', key);
-  document.getElementById('apiModal').style.display = 'none';
-  if (_pendingWord) generate();
+// Translate English -> Traditional Chinese via MyMemory (free, no key)
+async function translateToZh(text) {
+  if (!text) return '';
+  try {
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|zh-TW`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.responseStatus === 200 && data.responseData) {
+      return data.responseData.translatedText || '';
+    }
+  } catch (e) { /* fall through */ }
+  return '';
 }
 
 async function generate() {
@@ -35,15 +61,8 @@ async function generate() {
   const hint = document.getElementById('flipHint');
   const errMsg = document.getElementById('errorMsg');
 
-  const word = input.value.trim();
+  const word = input.value.trim().toLowerCase();
   if (!word) return;
-
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    _pendingWord = word;
-    openApiModal();
-    return;
-  }
 
   btn.disabled = true;
   errMsg.textContent = '';
@@ -52,34 +71,51 @@ async function generate() {
   container.innerHTML = `<div class="loading"><div class="spinner"></div><span>生成中 Generating…</span></div>`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: `You are an English vocabulary assistant for parent-child learning. Given an English word, return ONLY a valid JSON object with no extra text or markdown. Fields:
-- word: the word (string, lowercase)
-- phonetic: IPA phonetic transcription (string)
-- pos: part of speech bilingual e.g. "n. 名詞"
-- zh: Chinese translation (繁體中文, 1-4 chars)
-- emoji: single relevant emoji
-- example_en: simple child-friendly example sentence
-- example_zh: Chinese translation of example sentence (繁體中文)`,
-        messages: [{ role: 'user', content: `Word: ${word}` }],
-      }),
-    });
+    // 1. Look the word up in the free dictionary
+    const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+    if (!res.ok) throw new Error('找不到這個單字 · Word not found in dictionary');
+    const arr = await res.json();
+    const entry = arr[0];
 
-    const data = await res.json();
-    if (data.error) throw new Error(data.error.message);
+    // Phonetic: prefer top-level, else first phonetics entry that has text
+    let phonetic = entry.phonetic || '';
+    if (!phonetic && Array.isArray(entry.phonetics)) {
+      const p = entry.phonetics.find(p => p.text);
+      phonetic = p ? p.text : '';
+    }
 
-    const text = data.content.map(b => b.text || '').join('');
-    const d = JSON.parse(text.replace(/```json|```/g, '').trim());
+    // Part of speech (first meaning)
+    const meaning = entry.meanings[0] || {};
+    const posEn = meaning.partOfSpeech || '';
+    const pos = POS_MAP[posEn] || posEn;
+
+    // Example sentence: first definition that has one, else fall back to the definition itself
+    let example_en = '';
+    for (const m of entry.meanings) {
+      for (const def of m.definitions) {
+        if (def.example) { example_en = def.example; break; }
+      }
+      if (example_en) break;
+    }
+    if (!example_en) {
+      example_en = (meaning.definitions && meaning.definitions[0] && meaning.definitions[0].definition) || word;
+    }
+
+    // 2. Translate the word and the example to Traditional Chinese (in parallel)
+    const [zh, example_zh] = await Promise.all([
+      translateToZh(word),
+      translateToZh(example_en),
+    ]);
+
+    const d = {
+      word: word,
+      phonetic,
+      pos,
+      zh: zh || '（無翻譯）',
+      emoji: guessEmoji(word, posEn),
+      example_en,
+      example_zh,
+    };
 
     if (!history.find(h => h.word.toLowerCase() === d.word.toLowerCase())) {
       history.unshift(d);
@@ -88,16 +124,8 @@ async function generate() {
     }
     renderCard(d);
   } catch (e) {
-    const msg = e.message || 'Error';
-    container.innerHTML = `<div class="placeholder"><span>⚠️</span><p>無法生成閃卡<br>Failed. Try again.</p></div>`;
-    errMsg.textContent = msg;
-    // If the key was rejected, clear it and reopen the modal so the user can re-enter.
-    if (/x-api-key|authentication|invalid.*key|401/i.test(msg)) {
-      localStorage.removeItem('fc_api_key');
-      errMsg.textContent = 'API key 無效，請重新輸入 · Invalid API key — please re-enter.';
-      _pendingWord = word;
-      openApiModal();
-    }
+    container.innerHTML = `<div class="placeholder"><span>⚠️</span><p>${e.message || '無法生成閃卡 Failed. Try again.'}</p></div>`;
+    errMsg.textContent = e.message || 'Error';
   } finally {
     btn.disabled = false;
   }
